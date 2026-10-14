@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "paypy"
+name = "paypaypay"
 version = "4.3.0"
 description = "Python client for PayPay mobile API"
 readme = "README.md"

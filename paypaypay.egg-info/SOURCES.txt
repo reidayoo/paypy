@@ -1,0 +1,10 @@
+README.md
+pyproject.toml
+setup.py
+PayPaython_mobile/__init__.py
+PayPaython_mobile/main.py
+paypaypay.egg-info/PKG-INFO
+paypaypay.egg-info/SOURCES.txt
+paypaypay.egg-info/dependency_links.txt
+paypaypay.egg-info/requires.txt
+paypaypay.egg-info/top_level.txt
