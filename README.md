@@ -34,6 +34,8 @@ print(paypay.access_token)
 print(paypay.device_uuid)
 ```
 
+アクセストークンは約90日間有効です。
+
 ### アクセストークンでログイン（次回以降）
 
 ```python
