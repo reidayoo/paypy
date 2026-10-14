@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "paypy"
+version = "4.3.0"
+description = "Python client for PayPay mobile API"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = ["requests", "pkce"]
+
+[project.urls]
+Homepage = "https://github.com/konxjp/paypy"
