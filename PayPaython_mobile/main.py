@@ -1,10 +1,17 @@
+import json
+import os
+import threading
 import time
 import random
+import logging
+from pathlib import Path
 from uuid import uuid4
 from typing import NamedTuple
 
 import requests
 import pkce
+
+log = logging.getLogger("paypay.alive")
 
 
 '''def generate_sentry():
@@ -126,6 +133,82 @@ class PayPayNetWorkError(Exception):
     pass
 
 
+class SessionStore:
+    def __init__(self, path: str | Path = "~/.paypay/session.json"):
+        self._path = Path(path).expanduser()
+        self._data: dict[str, dict] = {}
+        self._load()
+
+    def _load(self):
+        if self._path.exists():
+            try:
+                self._data = json.loads(self._path.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError):
+                self._data = {}
+
+    def save(self, session_id: str, info: dict):
+        self._data[session_id] = info
+        self._path.parent.mkdir(parents=True, exist_ok=True)
+        self._path.write_text(
+            json.dumps(self._data, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        try:
+            os.chmod(self._path, 0o600)
+        except OSError:
+            pass
+
+    def get(self, session_id: str) -> dict | None:
+        return self._data.get(session_id)
+
+    def delete(self, session_id: str):
+        self._data.pop(session_id, None)
+        self._path.write_text(
+            json.dumps(self._data, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+
+    def list_sessions(self) -> list[str]:
+        return list(self._data.keys())
+
+
+_session_store = SessionStore()
+
+
+class HumanPatternSimulator:
+    def __init__(self, paypay_instance, interval_range: tuple = (30, 180)):
+        self._paypay = paypay_instance
+        self.interval_range = interval_range
+        self._stop = threading.Event()
+        self._thread: threading.Thread | None = None
+
+    def _run(self):
+        log.info("alive simulator started")
+        while not self._stop.is_set():
+            wait = random.uniform(*self.interval_range)
+            if self._stop.wait(wait):
+                break
+            try:
+                self._paypay.alive()
+                log.debug("alive: sent")
+            except Exception as e:
+                log.debug(f"alive failed: {e}")
+            time.sleep(random.uniform(0.5, 3.0))
+
+    def start(self):
+        if self._thread and self._thread.is_alive():
+            return
+        self._stop.clear()
+        self._thread = threading.Thread(target=self._run, daemon=True)
+        self._thread.start()
+
+    def stop(self):
+        self._stop.set()
+        if self._thread:
+            self._thread.join(timeout=5)
+        log.info("alive simulator stopped")
+
+
 class PayPay():
     def __init__(self, phone: str = None, password: str = None, device_uuid: str = None, client_uuid: str = str(uuid4()), access_token: str = None, proxy: str = None):
 
@@ -197,6 +280,48 @@ class PayPay():
             self.session.headers["Authorization"] = f"Bearer {self.access_token}"
             self.session.headers["content-type"] = "application/json"
 
+        self._simulator: HumanPatternSimulator | None = None
+
+    def save_session(self, session_id: str) -> None:
+        """セッション情報をファイルに保存する。"""
+        if not self.access_token:
+            raise PayPayLoginError("まずはログインしてください")
+        _session_store.save(session_id, {
+            "access_token": self.access_token,
+            "refresh_token": self.refresh_token,
+            "device_uuid": self.device_uuid,
+            "client_uuid": self.client_uuid,
+            "phone": self.phone,
+            "password": self.password,
+        })
+
+    @classmethod
+    def load_session(cls, session_id: str, proxy: str = None) -> "PayPay":
+        """保存済みのセッションから PayPay インスタンスを復元する。"""
+        data = _session_store.get(session_id)
+        if data is None:
+            raise PayPayLoginError(f"セッション '{session_id}' が見つかりません")
+        instance = cls(
+            phone=data.get("phone"),
+            password=data.get("password"),
+            device_uuid=data.get("device_uuid"),
+            client_uuid=data.get("client_uuid"),
+            access_token=data.get("access_token"),
+            proxy=proxy,
+        )
+        instance.refresh_token = data.get("refresh_token")
+        return instance
+
+    def start_alive_simulator(self, interval_range: tuple = (30, 180)) -> None:
+        """バックグラウンドで定期的に alive() を呼び続けるシミュレータを開始する。"""
+        if self._simulator is None:
+            self._simulator = HumanPatternSimulator(self, interval_range=interval_range)
+        self._simulator.start()
+
+    def stop_alive_simulator(self) -> None:
+        """alive() シミュレータを停止する。"""
+        if self._simulator is not None:
+            self._simulator.stop()
 
     def request(self, method: str, url: str, **kwargs):
         if method.lower() == "get":
