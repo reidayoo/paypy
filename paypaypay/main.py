@@ -232,7 +232,6 @@ class PayPay():
         self.phone = phone
         self.password = password
         self.access_token = None
-        self.refresh_token = None
         self.code_verifier = None
 
         self.params = {
@@ -289,7 +288,6 @@ class PayPay():
             raise PayPayLoginError("まずはログインしてください")
         _session_store.save(session_id, {
             "access_token": self.access_token,
-            "refresh_token": self.refresh_token,
             "device_uuid": self.device_uuid,
             "client_uuid": self.client_uuid,
             "phone": self.phone,
@@ -310,7 +308,6 @@ class PayPay():
             access_token=data.get("access_token"),
             proxy=proxy,
         )
-        instance.refresh_token = data.get("refresh_token")
         return instance
 
     def start_alive_simulator(self, interval_range: tuple = (30, 180)) -> None:
@@ -368,7 +365,6 @@ class PayPay():
             raise PayPayLoginError("電話番号を入力してください")
 
         self.access_token = None
-        self.refresh_token = None
         self.code_verifier, self.code_challenge = pkce.generate_pkce_pair(43)
         ##self.session.headers=update_header_baggage(self.session.headers,sentry_public_key,"0",False,"OAuth2Fragment",0)
 
@@ -531,7 +527,6 @@ class PayPay():
                 raise PayPayLoginError(get_token)
 
             self.access_token = get_token["payload"]["accessToken"]
-            self.refresh_token = get_token["payload"]["refreshToken"]
             self.session.headers["Authorization"] = f"Bearer {self.access_token}"
             self.session.headers["content-type"] = "application/json"
             self.session.headers = update_header_device_state(self.session.headers)
@@ -645,7 +640,6 @@ class PayPay():
             raise PayPayLoginError(get_token)
 
         self.access_token = get_token["payload"]["accessToken"]  #90日もつよ
-        self.refresh_token = get_token["payload"]["refreshToken"]
         self.session.headers["Authorization"] = f"Bearer {self.access_token}"
         self.session.headers["content-type"] = "application/json"
         self.session.headers = update_header_device_state(self.session.headers)
