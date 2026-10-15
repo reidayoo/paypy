@@ -9,5 +9,5 @@ from .main import (
     HumanPatternSimulator,
     SessionStore,
 )
-__version__ = '4.5.1'
+__version__ = '4.5.2'
 __url__          = 'https://github.com/taka-4602/PayPaython-mobile'

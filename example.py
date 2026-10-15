@@ -2,27 +2,28 @@ from paypaypay import PayPay
 
 
 paypay=PayPay("080-1234-5678","Unko-1234")#電話番号とパスワードでログインスタート、ハイフンはありでもなしでも。
+paypay.login()#ここでログインが開始される、AWS WAFチャレンジも自動で解決する
 url=input("URL?: ")#URLと書いてあるけどIDだけでもOK
-paypay.login(url)#URLなら https://www.paypay.ne.jp/portal/oauth2/l?id=TK4602 をそのままいれる、IDをいれるなら id=の横、TK4602
+paypay.login_confirm(url)#URLなら https://www.paypay.ne.jp/portal/oauth2/l?id=TK4602 をそのままいれる、IDをいれるなら id=の横、TK4602
 print(paypay.access_token)#アクセストークンは90日有効
-print(paypay.refresh_token)
 print(paypay.device_uuid)#デバイスUUIDで登録デバイスを管理してるぽい
 print(paypay.client_uuid)#クライアントUUIDは特に必要ない
 #これでログイン完了、次回からはアクセストークンかデバイスUUIDを入力してログインできる
 #アクセストークンならログイン作業自体をスキップできる
 
 paypay=PayPay("080-1234-5678","Unko-1234","登録済みのデバイスUUID",proxy=None)#プロキシはdictでもstrでもOK、str="http://host:port" http://が無くてもOK
+paypay.login()
 print(paypay.access_token)
-print(paypay.refresh_token)
 #URLを入力する必要はない
 
 paypay=PayPay(access_token="アクセストークン")
 #ログインをスキップ
 
-paypay.token_refresh("ここにリフレッシュトークン")#アクセストークンは90日経つと失効するので失効したらリフレッシュしよう
-print(paypay.access_token)
-print(paypay.refresh_token)
-#↑ここ2つはリフレッシュ後のものを返すようになる
+#アクセストークンが失効したら、登録済みデバイスUUIDで再ログインする
+#PayPay側がリフレッシュのエンドポイントを廃止したため token_refresh は使えない
+
+paypay.save_session("my_session")#セッションを ~/.paypay/session.json に保存
+paypay=PayPay.load_session("my_session")#保存したセッションから復元
 
 get_profile=paypay.get_profile()#引数なし、プロフィールを取得する
 print(get_profile.name)#ユーザー名
@@ -35,13 +36,14 @@ print(get_balance.useable_balance)#すべての使用可能な残高
 print(get_balance.money_light)#もってるマネーライト
 print(get_balance.money)#もってるマネー
 print(get_balance.points)#もってるポイント
+print(get_balance.bank_balance)#PayPay銀行の残高
 
 print(paypay.get_history(size=20))#支出入の履歴を取得する、size=どれだけ履歴を取得するか、デフォルトは20だったけど少なくもできる
 print(paypay.get_chat_rooms(size=20))#PayPayのDMリストを取得する
 print(paypay.get_chat_room_messages(chat_room_id="sendbird_group_channel_なんとか_なんとか"))#グループIDのDMを取得する sendbird_group_channel_ はなくてもOK
 print(paypay.get_point_history())#ポイントの履歴を取得する
 
-paypay.link_check("KT975hvzbH1EulTr")#web=True でWebAPIを使ってリンクを確認できる
+paypay.link_check("KT975hvzbH1EulTr")#web_api=True でWebAPIを使ってリンクを確認できる (ログイン不要)
 link_info=paypay.link_check("https://pay.paypay.ne.jp/KT975hvzbH1EulTr")#URLそのままでもOK
 print(link_info.amount)#リンクの合計金額
 print(link_info.money_light)#金額のマネーライト分
@@ -83,6 +85,17 @@ print(initialize_chatroom.chatroom_id)#見つかったユーザーのチャッ�
 get_barcode_info=paypay.get_barcode_info("https://qr.paypay.ne.jp/.............")#URLをそのまま投げてPayPay請求リンクから情報を取得する
 print(get_barcode_info.amount)#請求金額: 請求リンクに金額が指定されていなかったら None になる
 print(get_barcode_info.external_user_id)#ここに .send_money の receiver_id に入れるExternalIDがある
-initialize_chatroom=paypay.initialize_chatroom("ExternalID")#ExternalIDを使ってDM送信用のチャットルームIDを取得できる
 
-print(initialize_chatroom.chatroom_id)#見つかったユーザーのチャットルームID
+cashout=paypay.cashout_to_paypaybank(1000)#PayPay銀行へ出金
+print(cashout.bank_name)
+print(cashout.bank_account_number)
+
+pay_result=paypay.pay_qr_code("https://qr.paypay.ne.jp/.............")#QRコード決済をする
+print(pay_result.amount)#支払った金額
+print(pay_result.merchant_name)#店舗名
+print(pay_result.order_status)#決済ステータス
+
+paypay.alive()#Bot検知対策の無駄リクエストを手動で送る
+
+paypay.start_alive_simulator(interval_range=(30,180))#バックグラウンドで自動的に alive() を送り続ける
+paypay.stop_alive_simulator()#停止
