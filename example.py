@@ -1,4 +1,4 @@
-from PayPaython_mobile import PayPay
+from paypaypay import PayPay
 
 
 paypay=PayPay("080-1234-5678","Unko-1234")#電話番号とパスワードでログインスタート、ハイフンはありでもなしでも。

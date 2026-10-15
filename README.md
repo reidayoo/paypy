@@ -25,7 +25,7 @@ pip install paypaypay
 ### 登録済みデバイスでログイン（2FA不要）
 
 ```python
-from PayPaython_mobile import PayPay
+from paypaypay import PayPay
 
 paypay = PayPay("080-1234-5678", "your_password", device_uuid="登録済みのUUID")
 ```
@@ -221,7 +221,7 @@ paypay.alive()
 | `P2PTemporaryHoldError` | 送金一時保留 |
 
 ```python
-from PayPaython_mobile import PayPayError, PayPayLoginError, PayPayNetWorkError
+from paypaypay import PayPayError, PayPayLoginError, PayPayNetWorkError
 
 try:
     paypay.get_balance()
