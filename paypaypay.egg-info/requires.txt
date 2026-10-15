@@ -1,2 +1,4 @@
 requests
 pkce
+curl_cffi
+cryptography

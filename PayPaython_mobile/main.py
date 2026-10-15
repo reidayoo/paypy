@@ -10,6 +10,7 @@ from typing import NamedTuple
 
 import requests
 import pkce
+from .waf_solver import solve_aws_waf_challenge
 
 log = logging.getLogger("paypay.alive")
 
@@ -417,16 +418,27 @@ class PayPay():
             "request_uri": response["payload"]["requestUri"]
         }
 
-        raise PayPayLoginError("このモジュールは現在、アンチボット対策を実装していません\nアクセストークンが欲しい場合は\nhttps://github.com/taka-4602/PayPaython-mobile\nへアクセスして、ドキュメントを確認してください")
+        user_agent = headers["User-Agent"]
 
-        response = self.session.get(f"https://www.paypay.ne.jp/portal/api/v2/oauth2/authorize", headers=headers, params=params, allow_redirects=False)
+        authorize_response = self.session.get(f"https://www.paypay.ne.jp/portal/api/v2/oauth2/authorize", headers=headers, params=params, allow_redirects=False)
+
+        if authorize_response.status_code == 202 and 'x-amzn-waf-action' in authorize_response.headers:
+            aws_waf_token = solve_aws_waf_challenge(authorize_response.text, user_agent)
+            self.session.cookies.set("aws-waf-token", aws_waf_token, domain=".paypay.ne.jp")
+            self.session.get(f"https://www.paypay.ne.jp/portal/api/v2/oauth2/authorize", headers=headers, params=params, allow_redirects=False)
 
         params = {
             "client_id": "pay2-mobile-app-client",
             "mode": "landing"
         }
-        response = self.session.get("https://www.paypay.ne.jp/portal/oauth2/sign-in", headers=headers, params=params)
-        if response.status_code > 400:
+        signin_page_response = self.session.get("https://www.paypay.ne.jp/portal/oauth2/sign-in", headers=headers, params=params)
+
+        if signin_page_response.status_code == 202 and 'x-amzn-waf-action' in signin_page_response.headers:
+            aws_waf_token = solve_aws_waf_challenge(signin_page_response.text, user_agent)
+            self.session.cookies.set("aws-waf-token", aws_waf_token, domain=".paypay.ne.jp")
+            self.session.get("https://www.paypay.ne.jp/portal/oauth2/sign-in", headers=headers, params=params)
+
+        if signin_page_response.status_code > 400:
             raise PayPayLoginError("サインインページの取得に失敗しました")
 
         #sentry_ids = generate_sentry()

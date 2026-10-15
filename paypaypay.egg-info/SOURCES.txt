@@ -3,6 +3,13 @@ pyproject.toml
 setup.py
 PayPaython_mobile/__init__.py
 PayPaython_mobile/main.py
+PayPaython_mobile/waf_solver.py
+PayPaython_mobile/awswaf/__init__.py
+PayPaython_mobile/awswaf/aws.py
+PayPaython_mobile/awswaf/crypto.py
+PayPaython_mobile/awswaf/crypto_improved.py
+PayPaython_mobile/awswaf/fingerprint.py
+PayPaython_mobile/awswaf/verify.py
 paypaypay.egg-info/PKG-INFO
 paypaypay.egg-info/SOURCES.txt
 paypaypay.egg-info/dependency_links.txt

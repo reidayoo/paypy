@@ -20,32 +20,38 @@ PayPay の非公式モバイル API クライアントライブラリです。
 pip install paypaypay
 ```
 
-## 新規ログイン
+## ログイン
+
+### 登録済みデバイスでログイン（2FA不要）
 
 ```python
 from PayPaython_mobile import PayPay
 
-paypay = PayPay("080-1234-5678", "your_password")
-paypay.login()
+paypay = PayPay("080-1234-5678", "your_password", device_uuid="登録済みのUUID")
 ```
 
-`login()` を呼ぶと 2FA 用のワンタイムリンクが発行されます。
-別のデバイスで PayPay アプリに表示されたリンクを承認後、`login_confirm()` を呼びます。
+`__init__` 内でログイン処理が完了します。AWS WAF チャレンジも自動で解決します。
 
 ```python
-paypay.login_confirm("https://www.paypay.ne.jp/portal/oauth2/l?id=XXXX")
-# URL全体でもIDだけでもOK
-
 print(paypay.access_token)  # 約90日間有効
 print(paypay.device_uuid)
 ```
 
-### 登録済みデバイスでログイン
+### 新規デバイスでログイン（2FA必要）
 
 ```python
-paypay = PayPay("080-1234-5678", "your_password", device_uuid="登録済みのUUID")
-paypay.login()
-# URL入力不要
+paypay = PayPay("080-1234-5678", "your_password")
+```
+
+`__init__` で仮ログインまで完了し、2FA 用のワンタイムリンク（OTL）が発行されます。
+別のデバイスで PayPay アプリに表示されたリンクを承認後、`login_confirm()` を呼びます。
+
+```python
+paypay.login_confirm("https://www.paypay.ne.jp/portal/oauth2/l?id=XXXX")
+# URLでもIDだけでもOK
+
+print(paypay.access_token)
+print(paypay.device_uuid)  # 次回以降このUUIDで2FA不要
 ```
 
 ### アクセストークンでログイン（ログインをスキップ）
@@ -91,7 +97,6 @@ print(profile.icon)               # アイコンURL
 
 ```python
 link = paypay.link_check("https://pay.paypay.ne.jp/KT975hvzbH1EulTr")
-# URLでもIDだけでもOK
 
 print(link.amount)        # 金額
 print(link.status)        # PENDING / SUCCESS / REJECTED / FAILED
@@ -177,7 +182,6 @@ paypay.get_chat_room_messages(chat_room_id="chat_room_id")
 paypay.get_point_history()
 
 user = paypay.search_p2puser(user_id="paypay_id")
-# is_global=True でグローバル検索（レート制限に注意）
 
 room = paypay.initialize_chatroom(external_user_id="external_user_id")
 print(room.chatroom_id)

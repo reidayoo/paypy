@@ -2,8 +2,8 @@ from setuptools import setup, find_packages
 
 setup(
     name="paypaypay",
-    version="4.3.0",
+    version="4.4.0",
     packages=find_packages(),
-    install_requires=["requests", "pkce"],
+    install_requires=["requests", "pkce", "curl_cffi", "cryptography"],
     python_requires=">=3.10",
 )
