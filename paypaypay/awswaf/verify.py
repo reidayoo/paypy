@@ -36,7 +36,6 @@ def hash_pow(challenge_input: str, checksum: str, difficulty: int) -> str:
     while True:
         data = (base + str(nonce)).encode("utf-8")
         hash_bytes = hashlib.sha256(data).digest()
-        # uint32のビッグエンディアン連結
         parts = []
         for i in range(0, len(hash_bytes), 4):
             uint32 = int.from_bytes(hash_bytes[i:i+4], byteorder="big")

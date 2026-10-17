@@ -5,7 +5,6 @@ import uuid
 import os
 from .crypto import encrypt
 
-# AWSSolverのJS由来カスタムIEEE CRC
 ALPHABET = "0123456789abcdef"
 IEEE_POLYNOMIAL = 0xEDB88320
 
@@ -136,7 +135,6 @@ def get_fp(user_agent: str):
         "id": str(uuid.uuid4()),
     }
 
-    # AWSSolverと同じカスタムIEEE CRCでchecksum計算
     payload_str = json.dumps(fp, separators=(",", ":"))
     crc = _calculate_crc(payload_str)
     checksum = _encode_number(crc)

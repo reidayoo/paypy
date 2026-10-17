@@ -15,16 +15,12 @@ def encrypt(plaintext: bytes) -> str:
 
     iv_b64 = base64.b64encode(iv).decode('utf-8')
 
-    # ブラウザの実装: iv_base64::tag_hex::ciphertext_hex
-    # identifierは signals の name フィールド ("Zoey") に入る
     return f"{iv_b64}::{tag.hex()}::{ciphertext.hex()}"
 
 def decrypt(encrypted: str) -> bytes:
     parts = encrypted.split("::")
-    # フォーマット: iv_b64::tag_hex::ct_hex (3パート)
     if len(parts) == 3:
         iv_b64, tag_hex, ct_hex = parts
-    # Zoey::iv_b64::tag_hex::ct_hex (4パート - 後方互換)
     elif len(parts) == 4:
         _, iv_b64, tag_hex, ct_hex = parts
     else:

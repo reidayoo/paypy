@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "paypaypay"
-version = "4.5.3"
+version = "4.5.4"
 description = "Python client for PayPay mobile API"
 readme = "README.md"
 requires-python = ">=3.10"

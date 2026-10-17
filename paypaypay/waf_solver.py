@@ -6,7 +6,6 @@ def solve_aws_waf_challenge(html_response: str, user_agent: str) -> str:
     try:
         from .awswaf.aws import AwsWaf
         
-        # gokuPropsとendpointを抽出
         goku_props_match = re.search(r'window\.gokuProps = ({.*?});', html_response, re.DOTALL)
         if not goku_props_match:
             raise Exception("AWS WAF Challenge: gokuPropsの抽出に失敗")
@@ -20,7 +19,6 @@ def solve_aws_waf_challenge(html_response: str, user_agent: str) -> str:
         
         endpoint = endpoint_match.group(1)
         
-        # AWS WAF Challengeを解決
         waf_solver = AwsWaf(
             goku_props=goku_props,
             endpoint=endpoint,

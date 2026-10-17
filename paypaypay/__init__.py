@@ -9,5 +9,5 @@ from .main import (
     HumanPatternSimulator,
     SessionStore,
 )
-__version__ = '4.5.3'
+__version__ = '4.5.4'
 __url__          = 'https://github.com/reidayoo/paypy'

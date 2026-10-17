@@ -11,15 +11,12 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-# ロガー設定
 logger = logging.getLogger(__name__)
 
 from dynamic_key_extractor import get_encryption_key
 
-# デフォルト鍵（フォールバック用）
 DEFAULT_KEY = bytes.fromhex("6f71a512b1e035eaab53d8be73120d3fb68a0ca346b9560aab3e5cdf753d5e98")
 
-# グローバルな鍵とAESGCMインスタンス
 _current_key = DEFAULT_KEY
 _aesgcm = AESGCM(_current_key)
 
@@ -70,8 +67,6 @@ def encrypt(plaintext: bytes) -> str:
     
     iv_b64 = base64.b64encode(iv).decode('utf-8')
     
-    # ブラウザの実装: iv_base64::tag_hex::ciphertext_hex
-    # identifierは signals の name フィールド ("Zoey") に入る
     return f"{iv_b64}::{tag.hex()}::{ciphertext.hex()}"
 
 
@@ -86,10 +81,8 @@ def decrypt(encrypted: str) -> bytes:
         復号化されたデータ
     """
     parts = encrypted.split("::")
-    # フォーマット: iv_b64::tag_hex::ct_hex (3パート)
     if len(parts) == 3:
         iv_b64, tag_hex, ct_hex = parts
-    # Zoey::iv_b64::tag_hex::ct_hex (4パート - 後方互換)
     elif len(parts) == 4:
         _, iv_b64, tag_hex, ct_hex = parts
     else:
@@ -103,7 +96,6 @@ def decrypt(encrypted: str) -> bytes:
 
 
 if __name__ == "__main__":
-    # テスト
     print("改善版暗号化モジュールのテスト")
     
     plaintext = b"test data"

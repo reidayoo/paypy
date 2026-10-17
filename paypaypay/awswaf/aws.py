@@ -52,12 +52,9 @@ class AwsWaf:
         is_mp = self._is_mp_verify(inputs["challenge_type"])
 
         if is_mp:
-            # mp_verify: solutionはFormDataのsolution_dataフィールドで送る
-            # solution_metadataのsolutionはnull
             solution_data = verify_func(inputs["challenge"]["input"], checksum, inputs["difficulty"])
             solution_in_metadata = None
         else:
-            # 従来のverify: solutionはJSON内に含める
             solution_data = None
             solution_in_metadata = verify_func(inputs["challenge"]["input"], checksum, inputs["difficulty"])
 
@@ -111,16 +108,11 @@ class AwsWaf:
             "origin": f"https://{self.domain}",
             "referer": f"https://{self.domain}/",
         })
-        # Content-Typeはmultipart/form-dataだが、curl_cffiが自動設定するので削除
         if "content-type" in self.session.headers:
             del self.session.headers["content-type"]
 
-        # FormDataとして送信
-        # solution_data: Base64エンコードされたゼロバイト列
-        # solution_metadata: JSON文字列（solutionはnull）
         metadata_json = json.dumps(payload, separators=(',', ':'))
 
-        # curl_cffiではmultipartパラメータを使う
         from curl_cffi import CurlMime
         mp = CurlMime()
         mp.addpart(
@@ -143,7 +135,6 @@ class AwsWaf:
         if result.get("token"):
             return result["token"]
 
-        # トークンが返されなかった場合、新しいinputsで再試行
         if result.get("inputs"):
             raise Exception(f"mp_verify: トークン取得失敗、新しいチャレンジが返されました")
 
