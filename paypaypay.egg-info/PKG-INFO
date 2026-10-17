@@ -1,9 +1,9 @@
 Metadata-Version: 2.4
 Name: paypaypay
-Version: 4.5.2
+Version: 4.5.3
 Summary: Python client for PayPay mobile API
 License: MIT
-Project-URL: Homepage, https://github.com/konxjp/paypy
+Project-URL: Homepage, https://github.com/reidayoo/paypy
 Requires-Python: >=3.10
 Description-Content-Type: text/markdown
 Requires-Dist: requests
@@ -15,7 +15,6 @@ Dynamic: requires-python
 # paypaypay
 
 PayPay の非公式モバイル API クライアントライブラリです。
-内部実装は [PayPaython-mobile](https://github.com/taka-4602/PayPaython-mobile) をベースにしています。
 
 本ライブラリは PayPay 公式の提供するものではありません。PayPay 株式会社とは関係がありません。
 

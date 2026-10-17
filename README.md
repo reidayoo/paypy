@@ -1,7 +1,6 @@
 # paypaypay
 
 PayPay の非公式モバイル API クライアントライブラリです。
-内部実装は [PayPaython-mobile](https://github.com/taka-4602/PayPaython-mobile) をベースにしています。
 
 本ライブラリは PayPay 公式の提供するものではありません。PayPay 株式会社とは関係がありません。
 

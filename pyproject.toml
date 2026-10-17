@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "paypaypay"
-version = "4.5.2"
+version = "4.5.3"
 description = "Python client for PayPay mobile API"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -12,4 +12,4 @@ license = {text = "MIT"}
 dependencies = ["requests", "pkce", "curl_cffi", "cryptography"]
 
 [project.urls]
-Homepage = "https://github.com/konxjp/paypy"
+Homepage = "https://github.com/reidayoo/paypy"
